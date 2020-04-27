@@ -4,6 +4,7 @@ from config import DEFAULT_START_ADDRESS
 import argparse
 import googlemaps
 import jmespath
+import logging
 
 def get_shortest(matrix):
     """Return the name of the address with the shortest drive time"""
@@ -27,10 +28,17 @@ def create_route(client, origin, destinations):
         # Add that address to the route
         route.append(shortest_address)
         # Remove the address from remaining destinations
-        destinations.remove(shortest_address)
-    print(route)
+        try:
+            destinations.remove(shortest_address)
+        except KeyError:
+            logging.error(f"Unable to match {destinations} with Google's name")
+            logging.error(f"Run again using {shortest_address}")
+            exit(1)
+    return route
 
 def main():
+    logging.basicConfig(format='%(asctime)s | %(levelname)s | %(message)s ')
+
     _parser = argparse.ArgumentParser()
     _parser.add_argument('destinations', help='Pipe-separated list of destinations')
     _parser.add_argument('--origin', default=DEFAULT_START_ADDRESS)
@@ -39,7 +47,9 @@ def main():
     # Create a set for easy item removal
     destinations = set(_args.destinations.split('|'))
     gmc = googlemaps.Client(key=GMAPS_API_KEY)
-    create_route(gmc, _args.origin, destinations)
+    route = create_route(gmc, _args.origin, destinations)
+    for stop in route:
+        print(stop)
 
 if __name__ == '__main__':
     main()
