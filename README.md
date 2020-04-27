@@ -18,8 +18,6 @@
 ## Use
 ```bash
 python app.py -h
-```
-```
 usage: app.py [-h] [--origin ORIGIN] destinations
 
 positional arguments:
@@ -31,7 +29,7 @@ optional arguments:
 ```
 
 * Destination argument should be pipe-separated list
-** "1001 Woodward Ave, Detroit, MI 48226, USA|2001 15th St, Detroit, MI 48216, USA|5458 Vernor Hwy, Detroit, MI 48209, USA"
+  * "1001 Woodward Ave, Detroit, MI 48226, USA|2001 15th St, Detroit, MI 48216, USA|5458 Vernor Hwy, Detroit, MI 48209, USA"
 
 ```bash
 python app.py "1001 Woodward Ave, Detroit, MI 48226, USA|2001 15th St, Detroit, MI 48216, USA|5458 Vernor Hwy, Detroit, MI 48209, USA"
