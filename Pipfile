@@ -5,7 +5,6 @@ name = "pypi"
 
 [packages]
 googlemaps = "*"
-llist = "*"
 jmespath = "*"
 
 [dev-packages]
