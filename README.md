@@ -1,5 +1,10 @@
 # Southwest Care Delivery Route Generator
 
+## TODO
+* Read from CSV for simpler input
+* Create x routes with y maximum stops
+* Better handle mismatched address names
+
 ## Prep
 1. Clone the repo
     ```bash
