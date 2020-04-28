@@ -14,31 +14,27 @@
     ```bash
     pipenv install
     ```
-3. Set up your `secrets.py` file
+3. Create and populate the `secrets.py` file in the project directory
     ```bash
     export API_KEY=<YourGoogleDeveloperAPI>
     echo GMAPS_API_KEY=$API_KEY > ./secrets.py
     ```
+4. Create and populate the `destinations.csv` file in the project directory
+  * Column order: `house_number,street,city,zip,name,phone`
+  * Do not include the header column
 
 ## Use
 ```bash
 python app.py -h
-usage: app.py [-h] [--origin ORIGIN] destinations
+usage: app.py [-h] [--destinations-file DESTFILE] [--origin ORIGIN] drivers
 
 positional arguments:
-  destinations     Pipe-separated list of destinations
+  drivers               Number of drivers to create routes for
 
 optional arguments:
-  -h, --help       show this help message and exit
+  -h, --help            show this help message and exit
+  --destinations-file DESTFILE
+                        File path of CSV file containing addresses and contact
+                        info
   --origin ORIGIN
-```
-
-* Destination argument should be pipe-separated list
-  * ```
-    "1001 Woodward Ave, Detroit, MI 48226, USA|2001 15th St, Detroit, MI 48216, USA|5458 Vernor Hwy, Detroit, MI 48209, USA"
-    ```
-
-```bash
-python app.py "1001 Woodward Ave, Detroit, MI 48226, USA|2001 15th St, Detroit, MI 48216, USA|5458 Vernor Hwy, Detroit, MI 48209, USA"
-['4322 W Vernor Hwy, Detroit, Michigan 48209', '5458 Vernor Hwy, Detroit, MI 48209, USA', '2001 15th St, Detroit, MI 48216, USA', '1001 Woodward Ave, Detroit, MI 48226, USA']
 ```
