@@ -93,11 +93,11 @@ def format_email(routes):
         for destination in route[1:]:
             message += f"{destination.name} - {destination.phone}\n"
             message += f"{destination.address}\n\n"
-        message += "\nGOOGLE MAPS LINK\n\n"
+        message += "GOOGLE MAPS LINK\n\n"
         message += "I've also attached a PDF with step by step directions. Please reply with any questions. Thanks again for your assistance\n\n"
         message += "Regards,\nEvan Lock"
         print(message)
-        print("\n\n\n")
+        print("\n\n")
 
 def main():
     _log.basicConfig(format='%(asctime)s | %(levelname)s | %(message)s ')
