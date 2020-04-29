@@ -1,5 +1,5 @@
 from secrets import GMAPS_API_KEY
-from config import DEFAULT_START_ADDRESS
+from config import DEFAULT_START_HOUSE_NUMBER, DEFAULT_START_STREET, DEFAULT_START_CITY, DEFAULT_START_ZIP
 
 import argparse
 import csv
@@ -11,6 +11,21 @@ import math
 from datetime import date, timedelta
 from os import path
 
+class Destination:
+    def __init__(self, house_number, street, city, zip_code, name=None, phone=None):
+        self.house_number = house_number
+        self.street = street
+        self.city = city
+        self.zip = zip_code
+        self.state = 'MI'
+        self.country = 'USA'
+        self.name = name
+        self.phone = phone
+        self.address = (f"{self.house_number} {self.street}, "
+            f"{self.city}, {self.state} {self.zip}, "
+            f"{self.country}"
+        )   
+
 def get_shortest(matrix):
     """Return the name of the address with the shortest drive time"""
     elements = jmespath.search('rows[].elements[]', matrix)
@@ -21,26 +36,22 @@ def get_shortest(matrix):
             shortest_address = matrix['destination_addresses'][i]
     return shortest_address
 
-def assemble_address(destination):
-    return (f"{destination['address']['house_number']} {destination['address']['street']}, "
-            f"{destination['address']['city']}, {destination['address']['state']} {destination['address']['zip']}, {destination['address']['country']}"
-        )       
-
 def create_route(client, origin, destinations):
     """Create route preferring shortest drive time between destinations"""
     route = list()
     route.append(origin)
     addresses = set()
     for destination in destinations:
-        address = assemble_address(destination)
-        addresses.add(address)
+        addresses.add(destination.address)
     while len(addresses) > 0:
         # Get travel time from most recent stop to remaining destinations
-        matrix = client.distance_matrix(route[-1], addresses)
+        matrix = client.distance_matrix(route[-1].address, addresses)
         # Find the address with the shortest travel time
         shortest_address = get_shortest(matrix)
         # Add that address to the route
-        route.append(shortest_address)
+        for destination in destinations:
+            if shortest_address == destination.address:
+                route.append(destination)
         # Remove the address from remaining destinations
         try:
             addresses.remove(shortest_address)
@@ -57,17 +68,7 @@ def load_destinations(file_path):
         with open(file_path, 'r') as f:
             csvreader = csv.reader(f)
             for row in csvreader:
-                destination = dict()
-                destination['address'] = dict()
-                destination['address']['house_number'] = row[0]
-                destination['address']['street'] = row[1]
-                destination['address']['city'] = row[2]
-                destination['address']['zip'] = row[3]
-                destination['address']['state'] = 'MI'
-                destination['address']['country'] = 'USA'
-                destination['contact'] = dict()
-                destination['contact']['name'] = row[4]
-                destination['contact']['phone'] = row[5]
+                destination = Destination(row[0], row[1], row[2], row[3], row[4], row[5])
                 destinations.append(destination)
         return destinations
     else:
@@ -83,14 +84,15 @@ def format_email(routes):
             "Boxes will be ready to pick up after 12:30pm and should be picked up before 4:30pm.\n\n"
 
             "Pick Up:\n"
-            f"{route[0]}\n\n"
+            f"{route[0].address}\n\n"
 
             "PICKUP PICTURES\n\n"
 
             "Delivery Route: \n"
         )
         for destination in route[1:]:
-            message += f"{destination}\n"
+            message += f"{destination.name} - {destination.phone}\n"
+            message += f"{destination.address}\n\n"
         message += "\nGOOGLE MAPS LINK\n\n"
         message += "I've also attached a PDF with step by step directions. Please reply with any questions. Thanks again for your assistance\n\n"
         message += "Regards,\nEvan Lock"
@@ -112,22 +114,20 @@ def main():
         help='File path of CSV file containing addresses and contact info', 
         default='./destinations.csv'
     )
-    _parser.add_argument(
-        '--origin', 
-        default=DEFAULT_START_ADDRESS
-    )
+
     _args = _parser.parse_args()
     gmc = googlemaps.Client(key=GMAPS_API_KEY)
-    destinations = sorted(load_destinations(_args.destfile), key = lambda i: i['address']['zip'])
+    destinations = sorted(load_destinations(_args.destfile), key = lambda i: i.zip)
+    origin = Destination(DEFAULT_START_HOUSE_NUMBER, DEFAULT_START_STREET, DEFAULT_START_CITY, DEFAULT_START_ZIP)
     routes = list()
     start = 0
     for i in range(1, _args.drivers + 1):
         route = list()
         end = math.floor(len(destinations) / _args.drivers) * i
         if i == _args.drivers:
-            route = create_route(gmc, _args.origin, destinations[start:])
+            route = create_route(gmc, origin, destinations[start:])
         else:
-            route = create_route(gmc, _args.origin, destinations[start:end])
+            route = create_route(gmc, origin, destinations[start:end])
         routes.append(route)
         start = end
     format_email(routes)
